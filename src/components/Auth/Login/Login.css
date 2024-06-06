@@ -1,70 +1,114 @@
-.login-heading {
-    height: 47vh;
-    width: 34vw;
-    position: relative;
+.login-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.login-heading h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+}
+
+.radio-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.radio-buttons label {
     display: flex;
     align-items: center;
-    left: -3%;
-}
-.login-heading > p{
-    font-family: 'Source Sans Pro';
-    color: #192839;
-    font-size: 5em;
-    font-weight: 900; 
-}
-.login-heading > p > span{
-    color: #41D3BD;
-}
-.signup-head{
-    position: absolute;
-    top: 108%;
-    left: 31.5%;
-    font-family: 'Source Sans Pro';
-    font-size: 1.3em;
-}
-.signup-head > span{
+    gap: 10px;
     cursor: pointer;
-    color: #41D3BD;
-    text-decoration: underline;
 }
-.radio-button{
-    display: flex;
-    justify-content: space-between;
-    width: 20vw;
-    position: absolute;
-    top: 18%;
-    left: 29%;
-}
-#field-store,#field-customer{
+
+.form-field {
     position: relative;
-    left: -5%;
-    cursor: pointer;
+    margin-bottom: 20px;
 }
-.label-data{
-    font-family: 'Source Sans Pro';
-    font-style: normal;
-    font-weight: 400;
-    color: #2b4057f3;
-    font-size: 1.4em;
+
+.form-field input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
 }
-.emails, .passwords {
+
+.toggle-password {
     position: absolute;
-    top: 30%;
-    left: 28%;
-}
-.passwords {
-    top: 54%;
-}
-.forgot{
-    position: absolute;
-    top: 78%;
-    left: 29%;
-}
-.forgot > u{
-    font-family: 'Source Sans Pro';
-    font-style: normal;
-    font-weight: 400;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
     cursor: pointer;
-    color: #41D3BD;
-    font-size: 1.3em;
+    font-size: 0.9rem;
+    color: #007bff;
+}
+
+.error {
+    color: red;
+    font-size: 0.9rem;
+}
+
+.auth-error {
+    color: red;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.form-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.form-footer p {
+    margin: 10px 0;
+}
+
+.form-footer button {
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.login-image img {
+    margin-top: 20px;
+    max-width: 100%;
 }

@@ -1,117 +1,134 @@
-import React, { useState, useEffect } from 'react'
-import Navbar from '../../Layout/Navbar/Navbar'
-import { useForm } from 'react-hook-form'
-import image from '../../Assets/pic.svg'
-import {useNavigate} from 'react-router-dom'
-import './Login.css'
-import AuthService from '../../../services/API'
-import { useDispatch } from 'react-redux'
-import { setLoader, UnsetLoader } from '../../../redux/actions/LoaderActions'
+import React, { useState } from 'react';
+import Navbar from '../../Layout/Navbar/Navbar';
+import { useForm } from 'react-hook-form';
+import image from '../../Assets/pic.svg';
+import { useNavigate } from 'react-router-dom';
+import './Login.css';
+import AuthService from '../../../services/API';
+import { useDispatch } from 'react-redux';
+import { setLoader, UnsetLoader } from '../../../redux/actions/LoaderActions';
+
 const Login = () => {
     const { register, handleSubmit, formState: { errors }, reset } = useForm({
-        mode: "onTouched"
+        mode: 'onTouched'
     });
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const onSubmit = (data, e) => {
-        dispatch(setLoader())
-        e.preventDefault();
-        let obj = {
-            "email":data.email,
-            "password":data.password,
-            "isStore": data.aopt === "store" ? false : true
-        }
-        AuthService.Login(obj)
-        .then((res)=>{
-            dispatch(UnsetLoader())
-
-            console.log(res);
-            if(res){
-                localStorage.setItem("access",res.data.access_token);
-                localStorage.setItem("access",res.data.refresh_token);
-                localStorage.setItem("userid",res.data._id);
-
-                // navigate("/");
-                // console.log(obj);
-                !obj.isStore?navigate("/create-store"):navigate("/")
-            }
-        }).catch((e)=>{
-            dispatch(UnsetLoader())
-
-            console.log(e);
-        })
-    }
-    const handleClick = () =>{
-        navigate("/forgot");
-    }
-    const handleClicked = () =>{
-        navigate("/signup");
-    }
     const [toggle, setToggle] = useState(false);
-    return (
-        <div className='Signup-Page'>
-            <div className='Navbar-Signup'>
-                <Navbar />
-            </div>
-            <div className='middle-portion'>
-                <div className='login-heading'>
-                    <p>Welcome Back <span className='ques'>!</span></p>
-                </div>
-                <form className='input-login' onSubmit={handleSubmit(onSubmit)}>
-                    <div className='radio-button'>
-                        <div className='customer-radio'>
-                            <label className='label-data' htmlFor="field-customer">
-                                <input
-                                    {...register("aopt", { required: "This field is required" })}
-                                    type="radio"
-                                    name="aopt"
-                                    value="customer"
-                                    id="field-customer"
-                                />
-                                Customer
-                            </label>
+    const [authError, setAuthError] = useState('');
 
-                        </div>
-                        <div className='store-radio'>
-                            <label className='label-data' htmlFor="field-store">
-                                <input
-                                    {...register("aopt", { required: "This field is required" })}
-                                    type="radio"
-                                    name="aopt"
-                                    value="store"
-                                    id="field-store"
-                                />
-                                Store
-                            </label>
-                        </div>
-                        <p className='alerts'>{errors.aopt?.message}</p>
+    const onSubmit = async (data, e) => {
+        dispatch(setLoader());
+        e.preventDefault();
+        
+        const loginData = {
+            email: data.email,
+            password: data.password,
+            isStore: data.aopt === 'store'
+        };
+
+        try {
+            const res = await AuthService.Login(loginData);
+            dispatch(UnsetLoader());
+            if (res) {
+                localStorage.setItem('access', res.data.access_token);
+                localStorage.setItem('refresh', res.data.refresh_token);
+                localStorage.setItem('userid', res.data._id);
+                navigate(loginData.isStore ? '/' : '/create-store');
+            }
+        } catch (error) {
+            dispatch(UnsetLoader());
+            setAuthError('Authentication failed due to incorrect login information.');
+        }
+    };
+
+    const handleClick = () => {
+        navigate("/forgot");
+    };
+
+    const handleSignupClick = () => {
+        navigate("/signup");
+    };
+
+    return (
+        <div className="login-page">
+            <Navbar />
+            <div className="login-container">
+                <div className="login-heading">
+                    <h1>Welcome Back<span className="ques">!</span></h1>
+                </div>
+                {authError && <p className="auth-error">{authError}</p>}
+                <form className="login-form" onSubmit={handleSubmit(onSubmit)}>
+                    <div className="radio-buttons">
+                        <label>
+                            <input
+                                type="radio"
+                                value="customer"
+                                {...register("aopt", { required: "This field is required" })}
+                            />
+                            Customer
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                value="store"
+                                {...register("aopt", { required: "This field is required" })}
+                            />
+                            Store
+                        </label>
+                        {errors.aopt && <p className="error">{errors.aopt.message}</p>}
                     </div>
-                    <div className='form-container'>
-                        <div className='emails'>
-                            <input className='input-field' type="email" placeholder='Enter Email Address' name="email" {...register("email", { required: "Email is required", pattern: { value: /^[a-zA-Z0-9_\-]{4,}[@][a-z]{3,}[\.][a-z]{1,3}$/i, message: "This is not a valid email" } })}></input>
-                            <p className='alerts'>{errors.email?.message}</p>
-                        </div>
+                    <div className="form-field">
+                        <input
+                            type="email"
+                            placeholder="Enter Email Address"
+                            {...register("email", {
+                                required: "Email is required",
+                                pattern: {
+                                    value: /^[^@\s]+@[^@\s]+\.[^@\s]+$/,
+                                    message: "This is not a valid email"
+                                }
+                            })}
+                        />
+                        {errors.email && <p className="error">{errors.email.message}</p>}
                     </div>
-                    <div className='form-container'>
-                        <div className='passwords'>
-                            <i id="passlock" class="fa fa-eye" aria-hidden="true"></i>
-                            {
-                                toggle ? <i id='passlock' class="fa fa-eye-slash" aria-hidden="true" onClick={() => { setToggle(!toggle) }}></i> : <i id="passlock" class="fa fa-eye" aria-hidden="true" onClick={() => { setToggle(!toggle) }}></i>
-                            }
-                            <input className='input-field' type={toggle ? "text" : "password"} placeholder='Enter Password' name="password" {...register("password", { required: "password is required", minLength: { value: 8, message: "Password must be more than 8 characters" }, maxLength: { value: 14, message: "Password cannot exceed more than 14 characters" } })}></input>
-                            <p className='alerts'>{errors.password?.message}</p>
-                        </div>
+                    <div className="form-field">
+                        <input
+                            type={toggle ? "text" : "password"}
+                            placeholder="Enter Password"
+                            {...register("password", {
+                                required: "Password is required",
+                                minLength: {
+                                    value: 8,
+                                    message: "Password must be more than 8 characters"
+                                },
+                                maxLength: {
+                                    value: 14,
+                                    message: "Password cannot exceed more than 14 characters"
+                                }
+                            })}
+                        />
+                        <button
+                            type="button"
+                            className="toggle-password"
+                            onClick={() => setToggle(!toggle)}
+                        >
+                            {toggle ? 'Hide' : 'Show'}
+                        </button>
+                        {errors.password && <p className="error">{errors.password.message}</p>}
                     </div>
-                    <p className='forgot' onClick={handleClick}><u>Forgot password ?</u></p>
-                    <button className='signup-btn' type='submit'>Login</button>
-                    <p className='signup-head'>Create New Account <span onClick={handleClicked}>Signup</span></p>
+                    <div className="form-footer">
+                        <button type="button" onClick={handleClick}>Forgot password?</button>
+                        <button type="submit" className="login-btn">Login</button>
+                        <p>Don't have an account? <u onClick={handleSignupClick}>Sign up</u></p>
+                    </div>
                 </form>
-            </div>
-            <div className='queue-img'>
-                <img className="pic" src={image} alt="logo" />
+                <div className="login-image">
+                    <img src={image} alt="Welcome" />
+                </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Login
+export default Login;

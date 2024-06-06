@@ -1,184 +1,154 @@
-import React, { useState, useEffect, useRef } from 'react'
-import './Detail.css'
-import Navbar from '../../Layout/Navbar/Navbar'
-import { useForm } from 'react-hook-form'
-import photo1 from '../../Assets/customer.svg'
-import photo2 from '../../Assets/store.svg'
-import photo3 from '../../Assets/user.svg'
-import {useSelector,useDispatch} from 'react-redux'
-import * as actionCreators from '../../../redux/actions/AuthAction'
-import { useNavigate } from 'react-router-dom'
-import AuthService from '../../../services/API'
-import { setLoader, UnsetLoader } from '../../../redux/actions/LoaderActions'
+import React, { useState, useRef } from 'react';
+import './Detail.css';
+import Navbar from '../../Layout/Navbar/Navbar';
+import { useForm } from 'react-hook-form';
+import photo1 from '../../Assets/customer.svg';
+import photo2 from '../../Assets/store.svg';
+import photo3 from '../../Assets/user.svg';
+import { useSelector, useDispatch } from 'react-redux';
+import * as actionCreators from '../../../redux/actions/AuthAction';
+import { useNavigate } from 'react-router-dom';
+import AuthService from '../../../services/API';
+import { setLoader, UnsetLoader } from '../../../redux/actions/LoaderActions';
+
 const Details = () => {
-    const { register, handleSubmit, formState: { errors }, reset } = useForm({
+    const { register, handleSubmit, formState: { errors } } = useForm({
         mode: "onTouched"
     });
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const {pass} = useSelector((state)=>state.AuthReducer);    
+    const { pass } = useSelector((state) => state.AuthReducer);
     const [role, setRole] = useState(null);
-    const onSubmit = (data, e) => {
-        dispatch(setLoader())
-        e.preventDefault();
-        dispatch(actionCreators.userName(data.fullname));
-        dispatch(actionCreators.userMobile(data.mobile));
-        dispatch(actionCreators.userGender(data.aopt));
-        dispatch(actionCreators.userType(data.role));
-        localStorage.setItem("Type",role);
-        if(role!==null){
-            dispatch(actionCreators.userName(data.fullname));
-            dispatch(actionCreators.userMobile(data.mobile));
-            dispatch(actionCreators.userGender(data.aopt));
-            dispatch(actionCreators.userType(data.role));
-            localStorage.setItem("Type",role);
-            let obj = {
-                "email":localStorage.getItem("email"),
-                "password":pass,
-                "fullname":data.fullname,
-                "mobileno":data.mobile, 
-                "gender":data.aopt,
-                "role":role==="store" ? false : true
-            }
-            console.log(obj);
-            //after submit if role is store then navigate to another form else it navigate to home page 
-            AuthService.Details(obj)
-            .then((res)=>{
-                dispatch(UnsetLoader())
-                console.log(res);
-                localStorage.setItem("userid",res.data._id);
-                !obj.role?navigate("/create-store"):navigate("/")
-            }).catch((e)=>{
-                dispatch(UnsetLoader())
-                console.log(e);
-            })
-        }else{
-            alert("Choose Your Role");
-        }
-    }
-    const [fieldValue, setFieldValue] = useState(null);
     const [preview, setPreview] = useState(photo3);
-    const imageHandler = (e) => {
-        setFieldValue(e.target.files[0]);
-        const reader = new FileReader;
-        reader.onload = () => {
-            if (reader.readyState === 2) {
-                setPreview(reader.result);
-            }
-        }
-        reader.readAsDataURL(e.target.files[0]);
-    }
     const fileRef = useRef(null);
-    if (role) {
-        console.log(role);
-    }
+
+    const onSubmit = (data, e) => {
+        dispatch(setLoader());
+        e.preventDefault();
+        if (role === null) {
+            alert("Please choose your role");
+            dispatch(UnsetLoader());
+            return;
+        }
+
+        const userDetails = {
+            email: localStorage.getItem("email"),
+            password: pass,
+            fullname: data.fullname,
+            mobileno: data.mobile,
+            gender: data.aopt,
+            role: role === "store" ? false : true
+        };
+
+        AuthService.Details(userDetails)
+            .then((res) => {
+                dispatch(UnsetLoader());
+                localStorage.setItem("userid", res.data._id);
+                navigate(userDetails.role ? "/" : "/create-store");
+            })
+            .catch((e) => {
+                dispatch(UnsetLoader());
+                console.error(e);
+            });
+    };
+
+    const imageHandler = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                setPreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     return (
-        <div className='Signup-Page'>
-            <div className='Navbar-Signup'>
-                <Navbar />
-            </div>
-            <div className='middle-portion'>
-                <div className='first-portion'>
-                    <div className='detail-heading'>
-                        <p className='heading1'>Tell us something about yourself  <span className='ques'>!</span></p>
-                    </div>
-                    <div className='role'>
-                        <p className='heading2'>Select your Role</p>
-                    </div>
-                    <div className='images-role'>
-                        <div className='photo1'>
-                            <div className='photo1-img'>
-                                <img className="pic1" src={photo1} alt="logo" />
-                            </div>
-                            <div className='photo1-role' onClick={() => setRole("customer")}>
-                                Customer
-                            </div>
+        <div className='details-page'>
+            <Navbar />
+            <div className='details-container'>
+                <div className='details-heading'>
+                    <h1>Tell us something about yourself!</h1>
+                </div>
+                <div className='role-selection'>
+                    <h2>Select your Role</h2>
+                    <div className='role-options'>
+                        <div className={`role-option ${role === "customer" ? "selected" : ""}`} onClick={() => setRole("customer")}>
+                            <img src={photo1} alt="Customer" />
+                            <p>Customer</p>
                         </div>
-                        <div className='photo2'>
-                            <div className='photo2-img'>
-                                <img className="pic1" src={photo2} alt="logo" />
-                            </div>
-                            <div className='photo2-role' onClick={() => setRole("store")}>
-                                store
-                            </div>
+                        <div className={`role-option ${role === "store" ? "selected" : ""}`} onClick={() => setRole("store")}>
+                            <img src={photo2} alt="Store" />
+                            <p>Store</p>
                         </div>
                     </div>
                 </div>
-                <form className='second-portion' onSubmit={handleSubmit(onSubmit)}>
-                    <div className='upload-user'>
-                        <div className='user-img'>
-                            <img className="pic2" src={preview} alt="logo" />
-                        </div>
-                        <div className='upload-btn'>
+                <form className='details-form' onSubmit={handleSubmit(onSubmit)}>
+                    <div className='profile-picture'>
+                        <img src={preview} alt="Profile" />
+                        <input
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            ref={fileRef}
+                            onChange={imageHandler}
+                        />
+                        <button type="button" onClick={() => fileRef.current.click()}>Upload a profile picture</button>
+                    </div>
+                    <div className='form-group'>
+                        <input
+                            type="text"
+                            placeholder="Enter your full name"
+                            {...register("fullname", { required: "Name is required" })}
+                        />
+                        {errors.fullname && <p className="error">{errors.fullname.message}</p>}
+                    </div>
+                    <div className='form-group'>
+                        <input
+                            type="text"
+                            placeholder="Mobile Number"
+                            {...register("mobile", {
+                                required: "Mobile number is required",
+                                pattern: {
+                                    value: /^[8][0-9]{8}$/i,
+                                    message: "This is not a valid mobile number"
+                                }
+                            })}
+                        />
+                        {errors.mobile && <p className="error">{errors.mobile.message}</p>}
+                    </div>
+                    <div className='form-group'>
+                        <label>
                             <input
-                                hidden
-                                ref={fileRef}
-                                type={"file"}
-                                accept="image/*"
-                                onChange={imageHandler}
+                                type="radio"
+                                value="male"
+                                {...register("aopt", { required: "This field is required" })}
                             />
-                            <button onClick={() => {
-                                fileRef.current.click();
-                            }} className='upload-img-btn'>
-                                <i id="plus" class="fa fa-plus" aria-hidden="true"></i> <span>Upload a profile pic</span>
-                            </button>
-                        </div>
+                            Male
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                value="female"
+                                {...register("aopt", { required: "This field is required" })}
+                            />
+                            Female
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                value="other"
+                                {...register("aopt", { required: "This field is required" })}
+                            />
+                            Other
+                        </label>
+                        {errors.aopt && <p className="error">{errors.aopt.message}</p>}
                     </div>
-                    <div className='input-login-field'>
-                        <div className='fullname'>
-                            <input className='input-field2' type="text" placeholder='Enter your full name' name="fullname" {...register("fullname", { required: "Name is required", })}></input>
-                            <p className='alerts'>{errors.fullname?.message}</p>
-                        </div>
-                        <div className='mobile'>
-                            <input className='input-field2' type="text" placeholder='Mobile Number' name="mobile" {...register("mobile", { required: "mobile number is required", pattern: { value: /^[6789][0-9]{9}$/i, message: "This is not a valid mobile number" } })}></input>
-                            <p className='alerts'>{errors.mobile?.message}</p>
-                        </div>
-                    </div>
-                    <div className='radio-btns'>
-                        <div className='male-radio'>
-                            <label className='label-data' htmlFor="field-male">
-                                <input
-                                    {...register("aopt", { required: "This field is required" })}
-                                    type="radio"
-                                    name="aopt"
-                                    value="male"
-                                    id="field-male"
-                                />
-                                Male
-                            </label>
-
-                        </div>
-                        <div className='female-radio'>
-                            <label className='label-data' htmlFor="field-female">
-                                <input
-                                    {...register("aopt", { required: "This field is required" })}
-                                    type="radio"
-                                    name="aopt"
-                                    value="female"
-                                    id="field-female"
-                                />
-                                Female
-                            </label>
-                        </div>
-                        <div className='other-radio'>
-                            <label className='label-data' htmlFor="field-other">
-                                <input
-                                    {...register("aopt", { required: "This field is required" })}
-                                    type="radio"
-                                    name="aopt"
-                                    value="other"
-                                    id="field-other"
-                                />
-                                Other
-                            </label>
-                        </div>
-                        <p className='alerts'>{errors.aopt?.message}</p>
-                    </div>
-                    <button className='submit-btn' type='submit'>Submit</button>
+                    <button type="submit" className='submit-btn'>Submit</button>
                 </form>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Details
+export default Details;
